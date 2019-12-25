@@ -1,0 +1,1 @@
+/usr/bin/cc   -rdynamic CMakeFiles/ddos_attack.dir/src/tcp_client/tcp_client.c.o CMakeFiles/ddos_attack.dir/src/main.c.o  -o ddos_attack -lpthread 
