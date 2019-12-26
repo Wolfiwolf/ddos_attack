@@ -1,3 +1,0 @@
-/home/wolfi/dev/desktop/ddos_attack/CMakeFiles/rebuild_cache.dir
-/home/wolfi/dev/desktop/ddos_attack/CMakeFiles/ddos_attack.dir
-/home/wolfi/dev/desktop/ddos_attack/CMakeFiles/edit_cache.dir
