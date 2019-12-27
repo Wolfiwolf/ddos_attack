@@ -1,48 +1,61 @@
+#include "tcp_client/tcp_client.h"
+
 #include <stdio.h>
-#include <string.h>
-#include<sys/socket.h>
-#include <netinet/in.h>
-#include<arpa/inet.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <stdlib.h>
+
+void *myThreadFun(void *exit_status) {
+    int *exit_status_local = (int *) exit_status;
+
+    while (*exit_status_local != -1) {
+        int socket_desc = connect_to_server();
+
+        send_to_server(socket_desc, "GET / HTTP/1.1\r\n\r\n");
+
+        const char *reply = receive_from_server(socket_desc);
+
+        close(socket_desc);
+    }
+
+    return NULL;
+
+}
 
 int main() {
-    int socket_desc;
 
-    socket_desc = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    printf("IP: ");
+    char ip[32];
+    scanf("%s", &ip);
 
-    if (socket_desc == -1) {
-        printf("Could not create socket!");
+    set_ip_address(ip);
+
+    printf("Number of threads: ");
+    int number_of_threads;
+    scanf("%d", &number_of_threads);
+
+
+    printf("Sending requests on %d threads to %s.\nPress enter to stop.\n", number_of_threads, ip);
+
+
+    int *exit_status = (int *) alloca(sizeof(int));
+
+    *exit_status = 1;
+
+    pthread_t **threads = malloc(sizeof(pthread_t) * number_of_threads);
+
+    for (int i = 0; i < number_of_threads; i++) {
+        int *loc_id = malloc(sizeof(int));
+        *loc_id = i;
+        pthread_t *thread_id = malloc(sizeof(pthread_t));
+        threads[i] = thread_id;
+        pthread_create(threads[i], NULL, myThreadFun, (void *) exit_status);
     }
 
-    struct sockaddr_in device;
-
-    device.sin_addr.s_addr = inet_addr("192.168.1.1");
-    device.sin_family = AF_INET;
-    device.sin_port = htons(80);
-
-    if (connect(socket_desc, (struct sockaddr *) &device, sizeof(device)) < 0) {
-        puts("connect error");
-        return 1;
-    }
-
-    puts("connected");
-
-    const char* message = "GET / HTTP/1.1\r\n\r\n";
-    if( send(socket_desc , message , strlen(message) , 0) < 0)
-    {
-        puts("Send failed");
-        return 1;
-    }
-    puts("Data Send\n");
-
-
-    char server_reply[2000];
-    //Receive a reply from the server
-    if( recv(socket_desc, server_reply , 2000 , 0) < 0)
-    {
-        puts("recv failed");
-    }
-    puts("Reply received:\n");
-    puts(server_reply);
+    getchar();
+    getchar();
+    printf("EXIT TRIGGERED");
+    *exit_status = -1;
 
     return 0;
 }
